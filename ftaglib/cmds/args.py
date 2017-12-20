@@ -1,9 +1,33 @@
-import sys
-import argparse
+import sys, os
+#import argparse
 from textwrap import dedent
 
-from .InitCmd import InitCmd
+#from .InitCmd import InitCmd
 from .AddCmd import AddCmd
+
+
+AVAIL_COMMANDS = (
+#    InitCmd(),
+    AddCmd(),
+)
+
+
+def print_usage(argv=None):
+    '''Print usage'''
+
+    if argv is None:
+        argv = sys.argv[1:]
+
+    print(dedent("""\
+        USAGE: {prog} (command)
+        
+        Where command is one of:
+        """).strip().format(
+            prog = os.path.basename(sys.argv[0]),
+        ))
+    for cmd in AVAIL_COMMANDS:
+        print("  %-30s %s" % (cmd.name + ':', cmd.__doc__.split("\n")[0]))
+
 
 def parse_arguments(argv=None):
     '''Parse commandline arguments'''

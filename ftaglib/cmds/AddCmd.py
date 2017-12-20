@@ -1,8 +1,10 @@
 import os
 
-from . import FileTagRoot, TaggedFilePath
-from .common import find_root, expand_paths
-from .exceptions import NoFileTagRoot
+from .FtagCommand import FtagCommand
+
+from ..core import FileTagRoot, TaggedFilePath
+from ..core.common import find_root, expand_paths
+from ..core.exceptions import NoFileTagRoot
 
 def find_add_root(args, paths=None):
     '''Find root folder to work from'''
@@ -15,7 +17,7 @@ def find_add_root(args, paths=None):
         return FileTagRoot(root)
 
 
-class AddCmd(object):
+class AddCmd(FtagCommand):
     '''
     Add a tag to a file or set of files
     '''
@@ -46,6 +48,6 @@ class AddCmd(object):
             file = TaggedFilePath(root, path)
             file.add_tag(args.tag)
             if args.verbose:
-                print path
+                print(path)
 
         root.index.save()
