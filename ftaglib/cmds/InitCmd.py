@@ -1,29 +1,49 @@
 import os
 
-class InitCmd(object):
+from .. import UsageError
+from .FtagCommand import FtagCommand, FtagCommandArgs
+
+class InitCmd(FtagCommand):
     '''
     Command to create .file-tags file
     '''
 
-    @staticmethod
-    def add_arguments(subparsers):
+    name = 'init'
 
-        cmd = subparsers.add_parser('init', help=InitCmd.__doc__.strip())
+    usage = '''\
+        init (path)
+        
+        path:
+            Path to directory to store file tags DB (optional)
+            If not specified, then defaults to current directory
+        '''
 
-        cmd.set_defaults(
-            command = 'init',
-            cmdcls = InitCmd,
-        )
+    def parse_args(self, argv):
 
-        cmd.add_argument(
-            'path',
-            help="Path to root directory to store file tags in",
-            nargs='?',
-            default='./')
+        # Init
+        args = FtagCommandArgs()
+        args.path = os.path.abspath(os.curdir)
 
+        # Parse
+        for arg in self._read_arguments(argv):
+            if arg.type == 'posarg' and arg.pos == 0:
+                args.path = arg.value
+            else:
+                raise UsageError(cmd=self, error="Unknown argument: " + str(opt))
 
-    def go(self, args):
+        return args
+
+    def execute(self, argv):
+
+        args = self.parse_args(argv)
+
         path = os.path.join(args.path, '.file-tags.json')
         print("Initalizing " + os.path.abspath(path))
+
+        if os.path.exists(path):
+            if not self.ask_yes_no("Overwrite existing file?"):
+                print("aborting")
+                return
+
         with open(path, 'w') as fh:
             fh.write('{}')

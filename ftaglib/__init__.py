@@ -1,3 +1,3 @@
 
-from .core.exceptions import FileTagException
+from .core.exceptions import *
 

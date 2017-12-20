@@ -1,6 +1,7 @@
 import os
 
-from .FtagCommand import FtagCommand
+from .. import UsageError
+from .FtagCommand import FtagCommand, FtagCommandArgs
 
 from ..core import FileTagRoot, TaggedFilePath
 from ..core.common import find_root, expand_paths
@@ -22,26 +23,52 @@ class AddCmd(FtagCommand):
     Add a tag to a file or set of files
     '''
 
-    @staticmethod
-    def add_arguments(subparsers):
+    name = 'add'
 
-        cmd = subparsers.add_parser('add', help=AddCmd.__doc__.strip())
+    usage = '''\
+        add (--root dir) --tag name paths
+        
+        Where:
+            --tag name
+                Tag to add
+                
+            --root dir
+                Root folder for tags (containts .file-tags.json)
 
-        cmd.set_defaults(
-            command = 'add',
-            cmdcls = AddCmd,
+            paths 
+                Are the files to add the tags to 
+        '''
+
+    def parse_args(self, argv):
+
+        args = FtagCommandArgs(
+            tag = None,
+            root = None,
+            paths = list(),
+            verbose = False,
         )
 
-        cmd.add_argument(
-            '--root',
-            help = "Root folder for tags (containts .file-tags.json)"
-            )
-        cmd.add_argument('tag', help="Tag to add")
-        cmd.add_argument('paths', help="Files to add tag to", nargs='*')
+        for opt in self._read_arguments(argv, ('--tag', '--root')):
+            if opt.type == 'flag' and opt.name in ('--tag'):
+                args.tag = opt.value
+            elif opt.type == 'flag' and opt.name in ('--root'):
+                args.root = opt.value
+            elif opt.type == 'posarg':
+                args.paths.append(opt.value)
+            else:
+                raise UsageError(cmd=self, error="Unknown argument: " + str(opt))
+
+        if args.tag is None:
+            raise UsageError(cmd=self, error="--tag is required")
+
+        return args
 
 
-    def go(self, args):
-        paths = expand_paths(args.paths)
+    def execute(self, argv):
+
+        args = self.parse_args(argv)
+
+        paths = list(expand_paths(args.paths))
         root = find_add_root(args, paths)
 
         for path in expand_paths(paths):
