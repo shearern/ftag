@@ -68,6 +68,7 @@ class FileTagDatabase(object):
           on path_tags (path_id)
         ''')
         # TODO: Keep?  Will probably just table scan anyways
+        # TODO: Better to define foreign keys?
         c.execute('''
           create index path_tags_tag_id
           on path_tags (tag_id)
