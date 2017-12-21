@@ -1,6 +1,6 @@
 import os
 
-from . import FileTagIndexFile
+from . import FileTagDatabase
 
 
 class FileTagRoot(object):
@@ -11,7 +11,7 @@ class FileTagRoot(object):
 
         if index_path is None:
             index_path = os.path.join(self.__path, '.file-tags.json')
-        self.__index = FileTagIndexFile(index_path)
+        self.__index = FileTagDatabase(index_path)
 
 
     def is_parent_of(self, path):
