@@ -5,7 +5,8 @@ from .exceptions import FileTagIndexCorrupt
 
 
 def normalize_path_for_index(path):
-    return os.path.normpath(path).replace('\\', '/')
+    path = os.path.normpath(path).replace('\\', '/').lstrip('/')
+    return '/' + path
 
 
 class FileTagDatabase(object):
@@ -15,15 +16,12 @@ class FileTagDatabase(object):
 
     FILENAME='.file-tags.db'
 
-    def __init__(self, path=None):
+    def __init__(self, path):
         '''
-        :param path: Path to the index file (typically named .file-tags.json)
+        :param path: Path to the index file
         '''
-        self.path = None
-        self.tags = dict()  # [tag] = set(paths)
-
-        if path is not None:
-            self.load(path)
+        self.path = path
+        self.__db = sqlite3.connect(path)
 
 
     @staticmethod
@@ -41,7 +39,7 @@ class FileTagDatabase(object):
           (
             id      integer primary key,  -- Note: autoincrements
             path    text not null,
-            type    char(1) not null,
+            --type    char(1) not null,
             
             CONSTRAINT unique_path UNIQUE (path)
           )''')
@@ -49,9 +47,9 @@ class FileTagDatabase(object):
           create table tags
           (
             id      integer primary key,  -- Note: autoincrements
-            tag     varchar(30) not null,
+            name    varchar(30) not null,
             
-            CONSTRAINT unique_tags UNIQUE (tag)
+            CONSTRAINT unique_tags UNIQUE (name)
           )''')
         c.execute('''
           create table path_tags
@@ -78,49 +76,93 @@ class FileTagDatabase(object):
         db.close()
 
 
-    def load(self, path):
-        '''Load tags from file'''
-        if path is None:
-            path = self.path
-        if path is None:
-            raise Exception("Must specify path")
-        try:
-            with open(path, 'r') as fh:
-                data = json.load(fh)
-                if data.__class__ is not dict:
-                    return Exception("JSON data is %s, not a dict" % (
-                        data.__clas__.__name__))
-                self.tags = dict()
-                for tag, paths in data.items():
-                    self.tags[tag] = set(paths)
-            self.path = path
-        except Exception as e:
-            raise FileTagIndexCorrupt("Failed to read %s: %s" % (
-                os.path.abspath(path), str(e)))
+    @property
+    def root(self):
+        return os.path.abspath(os.path.dirname(self.path))
 
 
-    def save(self, path=None):
-        '''Save tags to file'''
-        if path is None:
-            path = self.path
-        if path is None:
-            raise Exception("Must specify path")
-        try:
-            with open(path, 'w') as fh:
-                data = dict()
-                for tag, paths in self.tags.items():
-                    data[tag] = list(paths)
-                json.dump(data, fh)
-        except Exception as e:
-            raise FileTagIndexCorrupt("Failed to save tags to %s: %s" % (
-                os.path.abspath(path), str(e)))
+    def get_tags_for(self, path):
+        '''
+        Get any tags assigned to the given path
+
+        TODO: sqlite3 doesn't seem to respect multiple cursors at
+              times, so in general pull all tags at once for now.
+              Maybe switch to generator in case a file has lots of tags?
+
+        :param path: Path to retrieve for already normalized
+        :return: list of tags
+        '''
+        path = normalize_path_for_index(path)
+        sql = '''\
+            select
+                t.name
+            from paths p
+            left join path_tags pt on pt.path_id = p.id
+            left join tags t on t.id = pt.tag_id
+            where p.path = :path
+        '''
+        curs = self.__db.cursor()
+        results = curs.execute(sql, {"path": path})
+        results = [str(row[0]) for row in results.fetchall()]
+        return results
+
+
+    def _tag_id(self, tag):
+        sql = '''
+            select id
+            from tags
+            where name = :tag'''
+        curs = self.__db.cursor()
+        results = curs.execute(sql, {'tag': tag}).fetchone()
+        if results is not None:
+            return results[0]
+        return None
+
+
+    def _path_id(self, path):
+        sql = '''
+            select id
+            from paths
+            where path = :path'''
+        curs = self.__db.cursor()
+        results = curs.execute(sql, {'path': path}).fetchone()
+        if results is not None:
+            return results[0]
+        return None
 
 
     def add_tag(self, path, tag):
         path = normalize_path_for_index(path)
+
+        curs = self.__db.cursor()
+
+        tag_id = self._tag_id(tag)
+        if tag_id is None:
+            curs.execute("""\
+              insert into tags (name) values(:tag)
+              """, {'tag': tag})
+            tag_id = self._tag_id(tag)
+
+        path_id = self._path_id(path)
+        if path_id is None:
+            curs.execute("""\
+              insert into paths (path) values(:path)
+              """, {'path': path})
+            path_id = self._path_id(path)
+
+        # TODO: Catch duplicate error
         try:
-            self.tags[tag].add(path)
-        except KeyError:
-            self.tags[tag] = set()
-            self.tags[tag].add(path)
+            curs.execute('''\
+              insert into path_tags (path_id, tag_id)
+              values (:path_id, :tag_id)
+              ''', {'path_id': path_id, 'tag_id': tag_id})
+
+        # Integrity error if duplicate
+        except sqlite3.IntegrityError, e:
+            if 'not unique' not in str(e):
+                raise e
+
+        self.__db.commit()
+
+
 

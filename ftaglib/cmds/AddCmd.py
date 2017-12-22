@@ -4,7 +4,7 @@ from .. import UsageError
 from .FtagCommand import FtagCommand, FtagCommandArgs
 
 from ..core import FileTagRoot, TaggedFilePath
-from ..core.common import find_root, expand_paths
+from ..core.utils import find_root, expand_paths
 from ..core.exceptions import NoFileTagRoot
 
 def find_add_root(args, paths=None):
