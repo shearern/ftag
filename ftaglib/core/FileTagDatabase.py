@@ -2,6 +2,7 @@ import os
 import sqlite3
 
 from .exceptions import FileTagIndexCorrupt
+from .utils import LRUCache
 
 
 def normalize_path_for_index(path):
@@ -22,6 +23,14 @@ class FileTagDatabase(object):
         '''
         self.path = path
         self.__db = sqlite3.connect(path)
+
+        self.__path_id_cache = LRUCache(100)
+        self.__tag_id_cache = LRUCache(100)
+
+
+    def invalidate_cache(self):
+        self.__path_id_cache = LRUCache(100)
+        self.__tag_id_cache = LRUCache(100)
 
 
     @staticmethod
@@ -108,27 +117,35 @@ class FileTagDatabase(object):
 
 
     def _tag_id(self, tag):
-        sql = '''
-            select id
-            from tags
-            where name = :tag'''
-        curs = self.__db.cursor()
-        results = curs.execute(sql, {'tag': tag}).fetchone()
-        if results is not None:
-            return results[0]
-        return None
+        try:
+            return self.__tag_id_cache[tag]
+        except KeyError:
+            sql = '''
+                select id
+                from tags
+                where name = :tag'''
+            curs = self.__db.cursor()
+            results = curs.execute(sql, {'tag': tag}).fetchone()
+            if results is not None:
+                self.__tag_id_cache[tag] = results[0]
+                return results[0]
+            return None
 
 
     def _path_id(self, path):
-        sql = '''
-            select id
-            from paths
-            where path = :path'''
-        curs = self.__db.cursor()
-        results = curs.execute(sql, {'path': path}).fetchone()
-        if results is not None:
-            return results[0]
-        return None
+        try:
+            return self.__path_id_cache[path]
+        except KeyError:
+            sql = '''
+                select id
+                from paths
+                where path = :path'''
+            curs = self.__db.cursor()
+            results = curs.execute(sql, {'path': path}).fetchone()
+            if results is not None:
+                self.__path_id_cache[path] = results[0]
+                return results[0]
+            return None
 
 
     def add_tag(self, path, tag):
