@@ -159,7 +159,7 @@ class FileTagDatabase(object):
 
         # Integrity error if duplicate
         except sqlite3.IntegrityError, e:
-            if 'not unique' not in str(e):
+            if 'unique' not in str(e).lower():
                 raise e
 
         self.__db.commit()

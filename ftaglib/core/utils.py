@@ -49,7 +49,7 @@ def find_all_files(root):
                 yield os.path.join(name, sub_path)
 
 
-def expand_paths(paths):
+def expand_paths(paths, recurse=False):
     '''
     Given a set of paths to act on, determine the paths of actual files to work on
     '''
@@ -59,12 +59,15 @@ def expand_paths(paths):
         if not os.path.exists(path):
             raise SpecifiedFileDoesNotExist("File doesn't exist: " + path)
 
-        # For directories, return all files under them
+        # For directories, return all files under them if recursing
         if os.path.isdir(path):
-            for sub_path in find_all_files(path):
-                yield os.path.join(path, sub_path)
+            yield path
+            if recurse:
+                for sub_path in find_all_files(path):
+                    yield os.path.join(path, sub_path)
 
-        # Fir files, just return the file
+
+        # For files, just return the file
         elif os.path.isfile(path):
             yield path
 

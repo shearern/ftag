@@ -1,7 +1,5 @@
 import os
 
-from .exceptions import FilePathNotInRoot
-
 from npath import File
 from .TaggablePath import TaggablePath
 

@@ -3,8 +3,6 @@ import collections
 
 from npath import Path
 
-from .exceptions import FilePathNotInRoot
-
 
 class NoTagDatabase(collections.MutableSet):
 
