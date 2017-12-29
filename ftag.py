@@ -6,7 +6,7 @@ from ftaglib import UsageError
 
 from ftaglib.cmds import FtagCommand
 from ftaglib.cmds import InitCmd
-from ftaglib.cmds import AddCmd
+from ftaglib.cmds import TagCmd
 
 
 def abort(msg):
@@ -16,7 +16,7 @@ def abort(msg):
 
 AVAIL_COMMANDS = [
     InitCmd(),
-    AddCmd(),
+    TagCmd(),
 ]
 
 def select_command(argv):

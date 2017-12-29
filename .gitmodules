@@ -1,0 +1,3 @@
+[submodule "lib/npath"]
+	path = lib/npath
+	url = https://github.com/shearern/npath.git

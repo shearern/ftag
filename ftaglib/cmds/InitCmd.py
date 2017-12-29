@@ -1,6 +1,7 @@
 import os
 
 from .. import UsageError
+from ..core import FileTagDatabase
 from .FtagCommand import FtagCommand, FtagCommandArgs
 
 class InitCmd(FtagCommand):
@@ -37,7 +38,7 @@ class InitCmd(FtagCommand):
 
         args = self.parse_args(argv)
 
-        path = os.path.join(args.path, '.file-tags.json')
+        path = os.path.join(args.path, FileTagDatabase.FILENAME)
         print("Initalizing " + os.path.abspath(path))
 
         if os.path.exists(path):
@@ -45,5 +46,4 @@ class InitCmd(FtagCommand):
                 print("aborting")
                 return
 
-        with open(path, 'w') as fh:
-            fh.write('{}')
+        FileTagDatabase.initialize_new_db(path)

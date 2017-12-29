@@ -6,6 +6,6 @@ class UsageError(Exception):
         super(UsageError, self).__init__(error)
 
 class FileTagIndexCorrupt(FileTagException): pass
-class FilePathNotInRoot(FileTagException): pass
+class NoTagDatabaseForPath(FileTagException): pass
 class NoFileTagRoot(FileTagException): pass
 class SpecifiedFileDoesNotExist(FileTagException): pass

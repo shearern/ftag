@@ -1,4 +1,3 @@
 
-from .FileTagIndexFile import FileTagIndexFile
-from .TaggedFilePath import TaggedFilePath
-from .FileTagRoot import FileTagRoot
+from .FtagExplorer import FtagExplorer
+from .FileTagDatabase import FileTagDatabase
