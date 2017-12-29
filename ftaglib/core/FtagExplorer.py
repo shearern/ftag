@@ -23,10 +23,8 @@ class FtagExplorer(object):
     MAX_OPEN_DBS = 5
 
     def __init__(self):
-
         self._dbs = collections.OrderedDict()  # [path] = FileTagDatabase
         self._db_lookup_cache = LRUCache(1000)
-
 
 
     def find_db_for(self, path):
