@@ -116,3 +116,4 @@ class TagCmd(FtagCommand):
             if args.verbose:
                 print("%s\t%s" % (path.s, ', '.join(path.tags)))
 
+        explorer.close_dbs()

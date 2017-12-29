@@ -1,4 +1,4 @@
-import os
+import os, sys
 import collections
 
 from npath import Path
@@ -120,4 +120,18 @@ class FtagExplorer(object):
             path = UntaggableFileObject(path)
             path._link_ftag(explorer=self)
             return path
+
+
+    def close_dbs(self):
+        for db in self._dbs.values():
+            db.close()
+        for path in list(self._dbs.keys()):
+            del self._dbs[path]
+
+
+    def __del__(self):
+        if len(self._dbs) > 0:
+            sys.stderr.write("ERROR: Databases not corrected closed.  Must call close_dbs() on FtagExplorer")
+        self.close_dbs()
+
 

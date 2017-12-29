@@ -16,6 +16,7 @@ class FileTagDatabase(object):
     '''
 
     FILENAME='.file-tags.db'
+    COMMIT_EVERY = 500;
 
     def __init__(self, path):
         '''
@@ -23,9 +24,15 @@ class FileTagDatabase(object):
         '''
         self.path = path
         self.__db = sqlite3.connect(path)
+        self.__commit_in = self.COMMIT_EVERY
 
         self.__path_id_cache = LRUCache(100)
         self.__tag_id_cache = LRUCache(100)
+
+
+    def close(self):
+        self.commit(force=True)
+        self.__db.close()
 
 
     def invalidate_cache(self):
@@ -179,7 +186,16 @@ class FileTagDatabase(object):
             if 'unique' not in str(e).lower():
                 raise e
 
-        self.__db.commit()
+
+        self.commit(False)
+
+
+    def commit(self, force=True):
+        # Commit
+        self.__commit_in -= 1
+        if self.__commit_in <= 0:
+            self.__db.commit()
+            self.__commit_in = self.COMMIT_EVERY
 
 
 
