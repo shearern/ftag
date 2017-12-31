@@ -193,7 +193,7 @@ class FileTagDatabase(object):
     def commit(self, force=True):
         # Commit
         self.__commit_in -= 1
-        if self.__commit_in <= 0:
+        if self.__commit_in <= 0 or force:
             self.__db.commit()
             self.__commit_in = self.COMMIT_EVERY
 

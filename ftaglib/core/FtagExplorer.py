@@ -122,6 +122,7 @@ class FtagExplorer(object):
 
     def close_dbs(self):
         for db in self._dbs.values():
+            db.commit(force=True)
             db.close()
         for path in list(self._dbs.keys()):
             del self._dbs[path]
