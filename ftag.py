@@ -2,7 +2,7 @@
 import sys, os
 from textwrap import dedent
 
-from ftaglib import UsageError
+from ftaglib import UsageError, FileTagException
 
 from ftaglib.cmds import FtagCommand
 from ftaglib.cmds import InitCmd
@@ -112,6 +112,10 @@ if __name__ == '__main__':
         print("")
         select_command(('help', )).execute(('help', ))
         sys.exit(1)
+
+    except FileTagException, e:
+        print("ERROR: " + str(e))
+        sys.exit(2)
 
     # args = parse_arguments()
     # cmd = args.cmdcls()

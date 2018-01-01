@@ -2,7 +2,7 @@ import os
 
 from .. import UsageError
 from .FtagCommand import FtagCommand, FtagCommandArgs
-from ..core.utils import expand_paths
+from ..core.utils import expand_paths, validate_tag_name
 from ..core import FtagExplorer
 from .. import NoTagDatabaseForPath
 
@@ -88,6 +88,12 @@ class TagCmd(FtagCommand):
                 args.tag_operations['-'].append(operation[1:])
             else:
                 raise UsageError(cmd=self, error="Tag specification must start with + or -: " + operation)
+
+        # Validate tag names
+        for tag in args.tag_operations['+']:
+            validate_tag_name(tag)
+        for tag in args.tag_operations['-']:
+            validate_tag_name(tag)
 
         return args
 

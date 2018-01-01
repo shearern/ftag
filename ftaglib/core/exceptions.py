@@ -9,3 +9,4 @@ class FileTagIndexCorrupt(FileTagException): pass
 class NoTagDatabaseForPath(FileTagException): pass
 class NoFileTagRoot(FileTagException): pass
 class SpecifiedFileDoesNotExist(FileTagException): pass
+class InvalidTagName(FileTagException): pass

@@ -1,7 +1,9 @@
 import os
 import collections
+import string
 
 from .exceptions import SpecifiedFileDoesNotExist
+from .exceptions import InvalidTagName
 
 def all_parents(path):
     '''
@@ -101,3 +103,14 @@ class LRUCache:
     def __setitem__(self, key, value):
         self.set(key, value)
 
+
+VALID_TAG_START_CHARS = set(string.ascii_letters + string.digits)
+VALID_TAG_CHARS = set(string.ascii_letters + string.digits + '_')
+def validate_tag_name(tag):
+    if len(tag) == 0:
+        raise InvalidTagName("Tag not specified")
+    if tag[0] not in VALID_TAG_START_CHARS:
+        raise InvalidTagName("Tag '%s' does not start with alpha or digit" % (tag))
+    for c in tag[1:]:
+        if c not in VALID_TAG_CHARS:
+            raise InvalidTagName("Tag '%s' has invalid character: %s" % (tag, c))
