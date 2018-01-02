@@ -6,6 +6,8 @@ from ..core.utils import expand_paths, validate_tag_name
 from ..core import FtagExplorer
 from .. import NoTagDatabaseForPath
 
+from ..operations import TagOperation
+
 
 class TagCmd(FtagCommand):
     '''
@@ -43,7 +45,6 @@ class TagCmd(FtagCommand):
         '''
 
     def parse_args(self, argv):
-
 
         # Init
         args = FtagCommandArgs(
@@ -101,25 +102,8 @@ class TagCmd(FtagCommand):
     def execute(self, argv):
 
         args = self.parse_args(argv)
-        explorer = FtagExplorer()
-
-        # Walk over all supplied paths
-        for path in expand_paths(args.paths, recurse=args.recurse):
-
-            if not os.path.exists(path):
-                raise UsageError(cmd=self, error="Path doesn't exist: " + path)
-
-            path = explorer.get(path)
-
-            if not path.taggable:
-                raise NoTagDatabaseForPath("No tag database found for %s.  Need to run ftag init?" % (path))
-
-            for tag in args.tag_operations['+']:
-                path.tags.add(tag)
-            for tag in args.tag_operations['-']:
-                path.tags.remove(tag)
-
-            if args.verbose:
-                print("%s\t%s" % (path.s, ', '.join(path.tags)))
-
-        explorer.close_dbs()
+        op = TagOperation(
+            paths = args.paths,
+            add_tags = args.tag_operations['+'],
+            remove_tags = args.tag_operations['-']
+        )
