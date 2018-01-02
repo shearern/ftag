@@ -1,9 +1,15 @@
-from ftaglib import FtagExplorer
+from ftaglib import FtagExplorer, FtagFilterExpression, FilterSyntaxError
 
 if __name__ == '__main__':
+
+    f = FtagFilterExpression("(drupal_base+(module,~library)),notag")
+
     exp = FtagExplorer()
-    f = exp.get('./test/test.txt')
-    if 'test' in f.tags:
-        print("Hit")
-    print "existing tags: " + ', '.join(f.tags)
-    f.tags.add('test')
+    path = exp.get('test/live/sites/README.txt')
+    print(f.matches(path))
+
+    try:
+        f = FtagFilterExpression("(drupal_base+(module-,~library)),notag")
+        f.matches(path)
+    except FilterSyntaxError, e:
+        print(str(e))
