@@ -130,7 +130,7 @@ class FtagExplorer(object):
 
     def __del__(self):
         if len(self._dbs) > 0:
-            sys.stderr.write("ERROR: Databases not corrected closed.  Must call close_dbs() on FtagExplorer")
+            sys.stderr.write("ERROR: Databases not correctly closed.  Must call close_dbs() on FtagExplorer")
         self.close_dbs()
 
 
