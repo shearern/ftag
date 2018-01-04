@@ -5,6 +5,26 @@ import string
 from .exceptions import SpecifiedFileDoesNotExist
 from .exceptions import InvalidTagName
 
+
+def ask(question, default=None):
+    answ = raw_input(prompt=question)
+    if len(answ.strip()) == 0:
+        return default
+    return answ
+
+
+def ask_yes_no(question, default=None):
+    while True:
+        answ = ask(question, default=None)
+        if answ is None:
+            return default
+        elif answ.lower() in ('n', 'no'):
+            return False
+        elif answ.lower() in ('y', 'yes'):
+            return True
+        print("Not a yes or no answer!")
+
+
 def all_parents(path):
     '''
     Return all parent directories to a path

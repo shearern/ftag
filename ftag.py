@@ -8,6 +8,7 @@ from ftaglib.cmds import FtagCommand
 from ftaglib.cmds import InitCmd
 from ftaglib.cmds import TagCmd
 from ftaglib.cmds import FindCmd
+from ftaglib.cmds import ExecCmd
 
 
 def abort(msg):
@@ -19,6 +20,7 @@ AVAIL_COMMANDS = [
     InitCmd(),
     TagCmd(),
     FindCmd(),
+    ExecCmd(),
 ]
 
 def select_command(argv):

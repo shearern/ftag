@@ -12,6 +12,7 @@ class NoTagDatabaseForPath(FileTagException): pass
 class NoFileTagRoot(FileTagException): pass
 class SpecifiedFileDoesNotExist(FileTagException): pass
 class InvalidTagName(FileTagException): pass
+class ShellCommandFailed(FileTagException): pass
 
 
 class FilterSyntaxError(FileTagException):
